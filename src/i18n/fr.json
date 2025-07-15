@@ -44,7 +44,6 @@
     "tipMessage": "Ces {{count}} paiement(s) solderont toutes les dettes du groupe efficacement."
   },
   "settlements": "Règlements",
-  "settings": "Paramètres",
   "profile": "Profil",
   "data_management": "Gestion des données",
   "danger_zone": "Zone de danger",
@@ -102,6 +101,7 @@
   "header": {
     "logout": "Déconnexion"
   },
+  "create_new_group": "Créer un nouveau groupe",
   "no_expenses_yet": "Aucune dépense pour l'instant",
   "add_your_first_expense_to_start_tracking": "Ajoutez votre première dépense pour commencer le suivi",
   "add_first_expense": "Ajouter une première dépense",

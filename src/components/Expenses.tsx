@@ -4,6 +4,8 @@ import { Expense, ExpenseParticipant } from '../types';
 import { Plus, Edit3, Trash2, Calendar, DollarSign, User } from 'lucide-react';
 import { formatCurrency, splitAmountEqually } from '../utils/calculations';
 import { useTranslation } from 'react-i18next';
+import { getSuggestedExpenseIconName } from '../utils/expenseIcons';
+import * as LucideIcons from 'lucide-react';
 
 export default function Expenses() {
   const { state, addExpense, updateExpense, deleteExpense } = useApp();
@@ -19,6 +21,8 @@ export default function Expenses() {
     splitType: 'equal' as 'equal' | 'custom',
     attachment: '' as string,
   });
+  const [showIconPicker, setShowIconPicker] = useState(false);
+  const [icon, setIcon] = useState<string | undefined>(editingExpense?.icon);
 
   const { t } = useTranslation();
 
@@ -79,6 +83,7 @@ export default function Expenses() {
       createdAt: editingExpense?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       attachment: formData.attachment || undefined,
+      icon: icon || undefined,
     };
 
     if (editingExpense) {
@@ -103,6 +108,7 @@ export default function Expenses() {
     });
     setEditingExpense(null);
     setShowModal(false);
+    setIcon(undefined); // Reset icon when closing modal
   };
 
   const handleEdit = (expense: Expense) => {
@@ -117,6 +123,7 @@ export default function Expenses() {
       splitType: 'custom',
       attachment: expense.attachment || '',
     });
+    setIcon(expense.icon);
     setShowModal(true);
   };
 
@@ -152,6 +159,9 @@ export default function Expenses() {
     );
   }
 
+  const suggestedIconName = getSuggestedExpenseIconName(formData.description || '');
+  const IconComponent = (LucideIcons as any)[icon || suggestedIconName] || LucideIcons.MoreHorizontal;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -186,6 +196,7 @@ export default function Expenses() {
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             .map((expense) => {
               const paidByUser = currentGroup.members.find(m => m.id === expense.paidBy);
+              const ExpenseIcon = (LucideIcons as any)[expense.icon || getSuggestedExpenseIconName(expense.description)] || LucideIcons.MoreHorizontal;
               return (
                 <div
                   key={expense.id}
@@ -193,11 +204,9 @@ export default function Expenses() {
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">{expense.description}</h3>
-                        <span className="text-2xl font-bold text-emerald-600">
-                          {formatCurrency(expense.amount)}
-                        </span>
+                      <div className="flex items-center gap-2">
+                        <ExpenseIcon className="w-6 h-6 text-emerald-600" />
+                        <span className="font-semibold text-gray-900">{expense.description}</span>
                       </div>
                       
                       <div className="flex items-center space-x-6 text-sm text-gray-600">
@@ -279,15 +288,25 @@ export default function Expenses() {
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                     {t('description')}
                   </label>
-                  <input
-                    type="text"
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                    placeholder={t('expense_description_placeholder')}
-                    required
-                  />
+                  <div className="flex items-center gap-2">
+                    <IconComponent className="w-6 h-6 text-emerald-600" />
+                    <input
+                      type="text"
+                      id="description"
+                      value={formData.description}
+                      onChange={e => {
+                        setFormData({ ...formData, description: e.target.value });
+                        if (!icon) setIcon(undefined); // reset icon to suggestion if pas d'override
+                      }}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                      placeholder={t('expense_description_placeholder')}
+                      required
+                    />
+                    {/* bouton pour ouvrir la sélection d’icône */}
+                    <button type="button" onClick={() => setShowIconPicker(true)} title="Change icon">
+                      <LucideIcons.Palette className="w-5 h-5 text-gray-400 hover:text-emerald-600" />
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -442,6 +461,25 @@ export default function Expenses() {
                 </div>
               </form>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal ou menu pour choisir une icône (exemple simple) */}
+      {showIconPicker && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-4 shadow-xl max-w-md w-full">
+            <div className="grid grid-cols-6 gap-3 max-h-60 overflow-y-auto">
+              {['Utensils','ShoppingCart','Home','Car','Plane','Gift','Beer','Film','Book','Heart','DollarSign','MoreHorizontal'].map(name => {
+                const Comp = (LucideIcons as any)[name];
+                return (
+                  <button key={name} onClick={() => { setIcon(name); setShowIconPicker(false); }} className="p-2 hover:bg-emerald-100 rounded">
+                    <Comp className="w-7 h-7" />
+                  </button>
+                );
+              })}
+            </div>
+            <button onClick={() => setShowIconPicker(false)} className="mt-4 px-4 py-2 bg-gray-200 rounded">Close</button>
           </div>
         </div>
       )}

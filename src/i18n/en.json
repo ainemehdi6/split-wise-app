@@ -101,6 +101,7 @@
   "header": {
     "logout": "Logout"
   },
+  "create_new_group": "Create New Group",
   "no_expenses_yet": "No expenses yet",
   "add_your_first_expense_to_start_tracking": "Add your first expense to start tracking",
   "add_first_expense": "Add First Expense",

@@ -26,6 +26,7 @@ export interface Expense {
   createdAt: string;
   updatedAt: string;
   attachment?: string; // base64 image data or image URL
+  icon?: string; // nom de l'icône Lucide
 }
 
 export interface ExpenseParticipant {
