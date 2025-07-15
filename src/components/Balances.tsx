@@ -2,9 +2,11 @@ import React from 'react';
 import { useApp } from '../contexts/AppContext';
 import { calculateBalances, calculateSettlements, formatCurrency } from '../utils/calculations';
 import { TrendingUp, TrendingDown, ArrowRight, Calculator } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function Balances() {
   const { state } = useApp();
+  const { t } = useTranslation();
   
   const currentGroup = state.groups.find(g => g.id === state.currentGroupId);
   const groupExpenses = state.expenses.filter(e => e.groupId === state.currentGroupId);
@@ -13,8 +15,8 @@ export default function Balances() {
     return (
       <div className="text-center py-12">
         <Calculator className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No group selected</h3>
-        <p className="text-gray-500">Select a group to view balances</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">{t('balances.noGroupSelected')}</h3>
+        <p className="text-gray-500">{t('balances.selectGroupMessage')}</p>
       </div>
     );
   }
@@ -29,15 +31,15 @@ export default function Balances() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900">Balances</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t('balances.balancesTitle')}</h2>
         <p className="text-gray-600 mt-1">{currentGroup.name}</p>
       </div>
 
       {groupExpenses.length === 0 ? (
         <div className="text-center py-12">
           <Calculator className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No expenses to calculate</h3>
-          <p className="text-gray-500">Add some expenses to see balances</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('balances.noExpensesMessage')}</h3>
+          <p className="text-gray-500">{t('balances.addExpensesMessage')}</p>
         </div>
       ) : (
         <>
@@ -46,7 +48,7 @@ export default function Balances() {
             <div className="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Expenses</p>
+                  <p className="text-sm font-medium text-gray-600">{t('balances.totalExpensesLabel')}</p>
                   <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalExpenses)}</p>
                 </div>
                 <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-lg flex items-center justify-center">
@@ -58,7 +60,7 @@ export default function Balances() {
             <div className="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">People Owed</p>
+                  <p className="text-sm font-medium text-gray-600">{t('balances.peopleOwedLabel')}</p>
                   <p className="text-2xl font-bold text-emerald-600">{creditors.length}</p>
                 </div>
                 <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-lg flex items-center justify-center">
@@ -70,7 +72,7 @@ export default function Balances() {
             <div className="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">People Owing</p>
+                  <p className="text-sm font-medium text-gray-600">{t('balances.peopleOwingLabel')}</p>
                   <p className="text-2xl font-bold text-orange-600">{debtors.length}</p>
                 </div>
                 <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-400 rounded-lg flex items-center justify-center">
@@ -82,7 +84,7 @@ export default function Balances() {
 
           {/* Individual Balances */}
           <div className="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Individual Balances</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('balances.individualBalancesTitle')}</h3>
             <div className="space-y-3">
               {balances
                 .sort((a, b) => b.balance - a.balance)
@@ -105,7 +107,7 @@ export default function Balances() {
                         <div>
                           <p className="font-medium text-gray-900">{user.name}</p>
                           <p className="text-sm text-gray-600">
-                            {isEven ? 'Settled up' : isPositive ? 'Gets back' : 'Owes'}
+                            {isEven ? t('balances.settledUp') : isPositive ? t('balances.getsBack') : t('balances.owes')}
                           </p>
                         </div>
                       </div>
@@ -135,9 +137,9 @@ export default function Balances() {
           {/* Settlement Suggestions */}
           {settlements.length > 0 && (
             <div className="bg-white/70 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Settlement Suggestions</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('balances.settlementSuggestionsTitle')}</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Minimize the number of transactions with these suggested payments:
+                {t('balances.settlementSuggestionsMessage')}
               </p>
               <div className="space-y-3">
                 {settlements.map((settlement, index) => {
@@ -174,7 +176,7 @@ export default function Balances() {
                         <p className="text-lg font-bold text-blue-600">
                           {formatCurrency(settlement.amount)}
                         </p>
-                        <p className="text-xs text-gray-600">to settle</p>
+                        <p className="text-xs text-gray-600">{t('balances.toSettle')}</p>
                       </div>
                     </div>
                   );
@@ -183,7 +185,7 @@ export default function Balances() {
               
               <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-sm text-blue-800">
-                  💡 <strong>Tip:</strong> These {settlements.length} payment{settlements.length > 1 ? 's' : ''} will settle all debts in the group efficiently.
+                  💡 <strong>{t('balances.tip')}:</strong> {t('balances.tipMessage', { count: settlements.length })}
                 </p>
               </div>
             </div>

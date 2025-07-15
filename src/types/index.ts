@@ -25,6 +25,7 @@ export interface Expense {
   participants: ExpenseParticipant[];
   createdAt: string;
   updatedAt: string;
+  attachment?: string; // base64 image data or image URL
 }
 
 export interface ExpenseParticipant {

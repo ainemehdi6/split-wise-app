@@ -1,6 +1,7 @@
 import React from 'react';
 import { useApp } from '../contexts/AppContext';
 import { Users, DollarSign, Calculator, Settings, LogOut } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface LayoutProps {
 export default function Layout({ children, currentView, onViewChange }: LayoutProps) {
   const { state, setCurrentUser, setCurrentGroup } = useApp();
   const currentGroup = state.groups.find(g => g.id === state.currentGroupId);
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     setCurrentUser(null);
@@ -18,10 +20,10 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
   };
 
   const navItems = [
-    { id: 'groups', label: 'Groups', icon: Users },
-    { id: 'expenses', label: 'Expenses', icon: DollarSign },
-    { id: 'balances', label: 'Balances', icon: Calculator },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'groups', label: t('nav.groups'), icon: Users },
+    { id: 'expenses', label: t('nav.expenses'), icon: DollarSign },
+    { id: 'balances', label: t('nav.balances'), icon: Calculator },
+    { id: 'settings', label: t('nav.settings'), icon: Settings },
   ];
 
   return (
@@ -63,7 +65,7 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
                   <button
                     onClick={handleLogout}
                     className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                    title="Logout"
+                    title={t('header.logout')}
                   >
                     <LogOut className="w-5 h-5" />
                   </button>

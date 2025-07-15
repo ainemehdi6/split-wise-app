@@ -3,6 +3,7 @@ import { useApp } from '../contexts/AppContext';
 import { Expense, ExpenseParticipant } from '../types';
 import { Plus, Edit3, Trash2, Calendar, DollarSign, User } from 'lucide-react';
 import { formatCurrency, splitAmountEqually } from '../utils/calculations';
+import { useTranslation } from 'react-i18next';
 
 export default function Expenses() {
   const { state, addExpense, updateExpense, deleteExpense } = useApp();
@@ -16,7 +17,10 @@ export default function Expenses() {
     participants: [] as string[],
     customShares: {} as { [userId: string]: string },
     splitType: 'equal' as 'equal' | 'custom',
+    attachment: '' as string,
   });
+
+  const { t } = useTranslation();
 
   const currentGroup = state.groups.find(g => g.id === state.currentGroupId);
   const groupExpenses = state.expenses.filter(e => e.groupId === state.currentGroupId);
@@ -30,6 +34,17 @@ export default function Expenses() {
       }));
     }
   }, [currentGroup, state.currentUser]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, attachment: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +78,7 @@ export default function Expenses() {
       participants,
       createdAt: editingExpense?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      attachment: formData.attachment || undefined,
     };
 
     if (editingExpense) {
@@ -83,6 +99,7 @@ export default function Expenses() {
       participants: state.currentUser ? [state.currentUser.id] : [],
       customShares: {},
       splitType: 'equal',
+      attachment: '',
     });
     setEditingExpense(null);
     setShowModal(false);
@@ -98,12 +115,13 @@ export default function Expenses() {
       participants: expense.participants.map(p => p.userId),
       customShares: expense.participants.reduce((acc, p) => ({ ...acc, [p.userId]: p.share.toString() }), {}),
       splitType: 'custom',
+      attachment: expense.attachment || '',
     });
     setShowModal(true);
   };
 
   const handleDelete = (expenseId: string) => {
-    if (confirm('Are you sure you want to delete this expense?')) {
+    if (confirm(t('confirm_delete_expense'))) {
       deleteExpense(expenseId);
     }
   };
@@ -128,8 +146,8 @@ export default function Expenses() {
     return (
       <div className="text-center py-12">
         <DollarSign className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No group selected</h3>
-        <p className="text-gray-500">Select a group to manage expenses</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">{t('no_group_selected')}</h3>
+        <p className="text-gray-500">{t('select_group_to_manage_expenses')}</p>
       </div>
     );
   }
@@ -138,7 +156,7 @@ export default function Expenses() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Expenses</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{t('expenses')}</h2>
           <p className="text-gray-600 mt-1">{currentGroup.name}</p>
         </div>
         <button
@@ -146,20 +164,20 @@ export default function Expenses() {
           className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-lg hover:from-emerald-600 hover:to-blue-600 transition-all duration-200 flex items-center space-x-2"
         >
           <Plus className="w-4 h-4" />
-          <span>Add Expense</span>
+          <span>{t('add_expense')}</span>
         </button>
       </div>
 
       {groupExpenses.length === 0 ? (
         <div className="text-center py-12">
           <DollarSign className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No expenses yet</h3>
-          <p className="text-gray-500 mb-6">Add your first expense to start tracking</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('no_expenses_yet')}</h3>
+          <p className="text-gray-500 mb-6">{t('add_your_first_expense_to_start_tracking')}</p>
           <button
             onClick={() => setShowModal(true)}
             className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-lg hover:from-emerald-600 hover:to-blue-600 transition-all duration-200"
           >
-            Add First Expense
+            {t('add_first_expense')}
           </button>
         </div>
       ) : (
@@ -185,7 +203,7 @@ export default function Expenses() {
                       <div className="flex items-center space-x-6 text-sm text-gray-600">
                         <div className="flex items-center space-x-1">
                           <User className="w-4 h-4" />
-                          <span>Paid by {paidByUser?.name}</span>
+                          <span>{t('paid_by')} {paidByUser?.name}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-4 h-4" />
@@ -194,7 +212,7 @@ export default function Expenses() {
                       </div>
                       
                       <div className="mt-3">
-                        <p className="text-sm text-gray-500 mb-2">Split between:</p>
+                        <p className="text-sm text-gray-500 mb-2">{t('split_between')}:</p>
                         <div className="flex flex-wrap gap-2">
                           {expense.participants.map((participant) => {
                             const user = currentGroup.members.find(m => m.id === participant.userId);
@@ -217,20 +235,25 @@ export default function Expenses() {
                           })}
                         </div>
                       </div>
+                      {expense.attachment && (
+                        <div className="mt-4">
+                          <img src={expense.attachment} alt="Expense attachment" className="max-h-40 rounded-lg border" />
+                        </div>
+                      )}
                     </div>
                     
                     <div className="flex space-x-2 ml-4">
                       <button
                         onClick={() => handleEdit(expense)}
                         className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit expense"
+                        title={t('edit_expense')}
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(expense.id)}
                         className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete expense"
+                        title={t('delete_expense')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -248,13 +271,13 @@ export default function Expenses() {
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                {editingExpense ? 'Edit Expense' : 'Add New Expense'}
+                {editingExpense ? t('edit_expense') : t('add_new_expense')}
               </h3>
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                    Description
+                    {t('description')}
                   </label>
                   <input
                     type="text"
@@ -262,7 +285,7 @@ export default function Expenses() {
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                    placeholder="e.g., Dinner at restaurant"
+                    placeholder={t('expense_description_placeholder')}
                     required
                   />
                 </div>
@@ -270,7 +293,7 @@ export default function Expenses() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
-                      Amount
+                      {t('amount')}
                     </label>
                     <input
                       type="number"
@@ -278,7 +301,7 @@ export default function Expenses() {
                       value={formData.amount}
                       onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                       className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
-                      placeholder="0.00"
+                      placeholder={t('amount_placeholder')}
                       step="0.01"
                       min="0"
                       required
@@ -287,7 +310,7 @@ export default function Expenses() {
                   
                   <div>
                     <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-                      Date
+                      {t('date')}
                     </label>
                     <input
                       type="date"
@@ -302,7 +325,7 @@ export default function Expenses() {
                 
                 <div>
                   <label htmlFor="paidBy" className="block text-sm font-medium text-gray-700 mb-2">
-                    Paid by
+                    {t('paid_by')}
                   </label>
                   <select
                     id="paidBy"
@@ -321,7 +344,7 @@ export default function Expenses() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Split between
+                    {t('split_between')}
                   </label>
                   <div className="space-y-2">
                     {currentGroup.members.map((member) => (
@@ -349,7 +372,7 @@ export default function Expenses() {
                             value={formData.customShares[member.id] || ''}
                             onChange={e => updateCustomShare(member.id, e.target.value)}
                             className="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                            placeholder="0.00"
+                            placeholder={t('custom_share_placeholder')}
                             step="0.01"
                             min="0"
                           />
@@ -361,7 +384,7 @@ export default function Expenses() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Split type
+                    {t('split_type')}
                   </label>
                   <div className="flex rounded-lg bg-gray-100 p-1">
                     <button
@@ -373,7 +396,7 @@ export default function Expenses() {
                           : 'text-gray-600 hover:text-gray-900'
                       }`}
                     >
-                      Equal Split
+                      {t('equal_split')}
                     </button>
                     <button
                       type="button"
@@ -384,9 +407,22 @@ export default function Expenses() {
                           : 'text-gray-600 hover:text-gray-900'
                       }`}
                     >
-                      Custom Split
+                      {t('custom_split')}
                     </button>
                   </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('attachment_optional')}</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+                  />
+                  {formData.attachment && (
+                    <img src={formData.attachment} alt="Attachment preview" className="mt-2 max-h-32 rounded-lg border" />
+                  )}
                 </div>
                 
                 <div className="flex space-x-3 pt-4">
@@ -395,13 +431,13 @@ export default function Expenses() {
                     onClick={resetForm}
                     className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                   <button
                     type="submit"
                     className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-lg hover:from-emerald-600 hover:to-blue-600 transition-all duration-200"
                   >
-                    {editingExpense ? 'Update Expense' : 'Add Expense'}
+                    {editingExpense ? t('update_expense') : t('add_expense')}
                   </button>
                 </div>
               </form>

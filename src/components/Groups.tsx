@@ -3,6 +3,7 @@ import { useApp } from '../contexts/AppContext';
 import { Group, User } from '../types';
 import { Plus, Users, Calendar, Copy, Check, Trash2, UserPlus } from 'lucide-react';
 import { generateInviteCode } from '../utils/calculations';
+import { useTranslation } from 'react-i18next';
 
 export default function Groups() {
   const { state, addGroup, setCurrentGroup, updateGroup } = useApp();
@@ -14,6 +15,7 @@ export default function Groups() {
     name: '',
     description: '',
   });
+  const { t } = useTranslation();
 
   const handleCreateGroup = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,8 +67,8 @@ export default function Groups() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Groups</h2>
-          <p className="text-gray-600 mt-1">Manage your expense groups</p>
+          <h2 className="text-2xl font-bold text-gray-900">{t('groups')}</h2>
+          <p className="text-gray-600 mt-1">{t('manage_groups')}</p>
         </div>
         <div className="flex space-x-3">
           <button
@@ -74,14 +76,14 @@ export default function Groups() {
             className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"
           >
             <UserPlus className="w-4 h-4" />
-            <span>Join Group</span>
+            <span>{t('join_group')}</span>
           </button>
           <button
             onClick={() => setShowCreateModal(true)}
             className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-lg hover:from-emerald-600 hover:to-blue-600 transition-all duration-200 flex items-center space-x-2"
           >
             <Plus className="w-4 h-4" />
-            <span>Create Group</span>
+            <span>{t('create_group')}</span>
           </button>
         </div>
       </div>
@@ -89,13 +91,13 @@ export default function Groups() {
       {state.groups.length === 0 ? (
         <div className="text-center py-12">
           <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No groups yet</h3>
-          <p className="text-gray-500 mb-6">Create your first group to start splitting expenses</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('no_groups_yet')}</h3>
+          <p className="text-gray-500 mb-6">{t('create_first_group')}</p>
           <button
             onClick={() => setShowCreateModal(true)}
             className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-lg hover:from-emerald-600 hover:to-blue-600 transition-all duration-200"
           >
-            Create Your First Group
+            {t('create_first_group')}
           </button>
         </div>
       ) : (
@@ -179,7 +181,7 @@ export default function Groups() {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Create New Group</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">{t('create_new_group')}</h3>
             <form onSubmit={handleCreateGroup} className="space-y-4">
               <div>
                 <label htmlFor="groupName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -232,7 +234,7 @@ export default function Groups() {
       {showJoinModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Join Group</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">{t('join_group')}</h3>
             <form onSubmit={handleJoinGroup} className="space-y-4">
               <div>
                 <label htmlFor="inviteCode" className="block text-sm font-medium text-gray-700 mb-2">

@@ -1,4 +1,14 @@
 {
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "node",
+  },
+  "include": [
+    "src",
+    "src/types"
+  ],
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },
